@@ -1,7 +1,13 @@
 import Link from 'next/link'
+import PodcastListWithClick from '../components/PodcastListWithClick'
 import Error from './_error'
 
 export default class extends React.Component {
+
+  constructor(props) {
+    super(props)
+    this.state = { openPodcast: null }
+  }
 
   static async getInitialProps({ query, res }) {
     let idChannel = query.id
@@ -36,8 +42,16 @@ export default class extends React.Component {
 
   }
 
+  openPodcast = (event, podcast) => {
+    event.preventDefault();
+    this.setState({
+      openPodcast: podcast
+    })
+  }
+
   render() {
     const { channel, audioClips, series, statusCode } = this.props
+    const { openPodcast } = this.state
 
     if (statusCode !== 200) {
       return <Error statusCode={statusCode} />
@@ -47,6 +61,8 @@ export default class extends React.Component {
       <header>Podcasts</header>
 
       <div className="banner" style={{ backgroundImage: `url(${channel.urls.banner_image.original})` }} />
+
+      { openPodcast && <div>Hay un podcast abierto</div> }
 
       <h1>{ channel.title }</h1>
 
@@ -67,16 +83,7 @@ export default class extends React.Component {
       }
 
       <h2>Ultimos Podcasts</h2>
-      { audioClips.map((clip) => (
-        <Link href={`/podcast?id=${clip.id}`} prefetch key={clip.id}>
-          <a className='podcast'>
-            <h3>{ clip.title }</h3>
-            <div className='meta'>
-              { Math.ceil(clip.duration / 60) } minutes
-            </div>
-          </a>
-        </Link>
-      ))}
+      <PodcastListWithClick podcasts={ audioClips } onClickPodcast={ this.openPodcast } />
 
 
       <style jsx>{`
